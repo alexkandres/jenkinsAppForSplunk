@@ -73,7 +73,8 @@ define([
 
             var buildDistributionManager = new SearchManager({
                 id: 'overview-builds-daily-distribution-search',
-                search: 'index=jenkins_statistics ' + filterString +
+                search: 'index=apps ' + filterString +
+                'sourcetype="json:jenkins" source="http:jenkins/job_event"'+
                 ' event_tag=job_event' +
                 ' (type=started OR type=completed)' +
                 ' | dedup host build_url sortby -_time ' +
@@ -141,7 +142,8 @@ define([
                 earliest_time: "$job_result_timerange.earliest_time$",
                 latest_time: "$job_result_timerange.latest_time$",
                 refresh: 180,
-                search: 'index=jenkins_statistics ' + filterString +
+                search: 'index=apps ' + filterString +
+                'sourcetype="json:jenkins" source="http:jenkins/job_event"'+
                 ' event_tag="job_event" ' +
                 ' | dedup host build_url sortby -_time' +
                 ' | eval job_result=if(type="started", "INPROGRESS", job_result)' +
@@ -257,7 +259,7 @@ define([
                                 id: 'build-status-search-' + id,
                                 latest_time: latest_time_token,
                                 earliest_time: earliest_time_token,
-                                search: 'index=jenkins_statistics event_tag="job_event" ' + job_filter + ' | dedup host build_url sortby -_time | eval job_result=if(type="started", "INPROGRESS", job_result) | table host job_name build_number job_result | rename host as "Jenkins Master" job_name as Job build_number as Build job_result as Status',
+                                search: 'index=apps sourcetype="json:jenkins" source="http:jenkins/job_event" event_tag="job_event" ' + job_filter + ' | dedup host build_url sortby -_time | eval job_result=if(type="started", "INPROGRESS", job_result) | table host job_name build_number job_result | rename host as "Jenkins Master" job_name as Job build_number as Build job_result as Status',
                                 autostart: true,
                                 refresh:refreshSec
                             },{tokens: true}));
@@ -300,7 +302,7 @@ define([
                                 id: 'build-trends-search-' + id,
                                 latest_time: latest_time_token,
                                 earliest_time: earliest_time_token,
-                                search: 'index=jenkins_statistics event_tag=job_event type=completed ' + job_filter + ' | dedup host build_url sortby -_time | timechart count by job_result',
+                                search: 'index=apps sourcetype="json:jenkins" source="http:jenkins/job_event" event_tag=job_event type=completed ' + job_filter + ' | dedup host build_url sortby -_time | timechart count by job_result',
                                 autostart: true,
                                 refresh:refreshSec
                             },{tokens: true}));
@@ -356,7 +358,7 @@ define([
                                 id: 'test-trends-search-' + id,
                                 latest_time: latest_time_token,
                                 earliest_time: earliest_time_token,
-                                search: 'index=jenkins_statistics event_tag=job_event type=completed ' + job_filter + ' | timechart sum(test_summary.passes) as "Passed" sum(test_summary.failures) as "Failed" sum(test_summary.skips) as "Skipped"',
+                                search: 'index=apps sourcetype="json:jenkins" source="http:jenkins/job_event" event_tag=job_event type=completed ' + job_filter + ' | timechart sum(test_summary.passes) as "Passed" sum(test_summary.failures) as "Failed" sum(test_summary.skips) as "Skipped"',
                                 autostart: true,
                                 refresh:refreshSec
                             },{tokens: true}));
@@ -394,7 +396,7 @@ define([
                                 id: 'custom-search-' + id,
                                 latest_time: latest_time_token,
                                 earliest_time: earliest_time_token,
-                                search: 'index=jenkins_statistics event_tag="job_event" ' + job_filter + ' | dedup host build_url sortby -_time  |' + custom_spl,
+                                search: 'index=apps sourcetype="json:jenkins" source="http:jenkins/job_event" event_tag="job_event" ' + job_filter + ' | dedup host build_url sortby -_time  |' + custom_spl,
                                 autostart: true,
                                 refresh:refreshSec
                             },{tokens: true}));
